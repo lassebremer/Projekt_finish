@@ -8,6 +8,8 @@ from dotenv import load_dotenv
 import logging
 import joblib
 from tensorflow.keras.models import load_model
+from tensorflow.keras.metrics import MeanSquaredError
+import holidays
 
 load_dotenv()  # Load environment variables from .env file
 
@@ -19,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=['*'],
+    allow_origins=['*'],  # Adjust this to restrict origins if necessary
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -29,7 +31,12 @@ app.add_middleware(
 pca = joblib.load('pca.pkl')
 power_transformer = joblib.load('power_transformer.pkl')
 scaler = joblib.load('scaler.pkl')
-model = load_model('best_pedestrian_prediction_model.h5')
+
+# Register custom objects
+custom_objects = {'mse': MeanSquaredError()}
+
+# Load the model with custom objects
+model = load_model('best_pedestrian_prediction_model.h5', custom_objects=custom_objects)
 
 def fetch_data(hours=1):
     now = datetime.datetime.now(datetime.timezone.utc)
